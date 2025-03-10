@@ -1,0 +1,263 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_PARKING_SLOTS 100
+#define DAILY_MAX_FEE 30 // 每天最大收费
+#define HOURLY_RATE 3    // 每小时收费
+#define FREE_HOURS 2     // 每天免费停车时间（小时）
+
+// 定义栈结构
+typedef struct Stack {
+    int top;
+    int capacity;
+    char(*array)[21];
+    time_t* arrivalTimes; // 对应每辆车的到达时间
+} Stack;
+
+// 创建栈
+Stack* createStack(int capacity) {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->capacity = capacity;
+    stack->top = -1;
+    stack->array = (char(*)[21])malloc(stack->capacity * sizeof(char[21]));
+    stack->arrivalTimes = (time_t*)malloc(stack->capacity * sizeof(time_t));
+    return stack;
+}
+
+// 栈操作
+int isStackEmpty(Stack* stack) {
+    return stack->top == -1;
+}
+
+int isStackFull(Stack* stack) {
+    return stack->top == stack->capacity - 1;
+}
+
+
+void push(Stack* stack, const char* plateNumber, time_t arrivalTime) {
+    if (isStackFull(stack)) {
+        printf("停车场已满\n");
+        return;
+    }
+    strcpy(stack->array[++stack->top], plateNumber);
+    stack->arrivalTimes[stack->top] = arrivalTime;
+}
+
+void pop(Stack* stack, char* plateNumber, time_t* arrivalTime) {
+    if (isStackEmpty(stack)) {
+        printf("停车场为空\n");
+        strcpy(plateNumber, "");
+        *arrivalTime = 0;
+        return;
+    }
+    strcpy(plateNumber, stack->array[stack->top]);
+    *arrivalTime = stack->arrivalTimes[stack->top--];
+}
+
+void peek(Stack* stack, char* plateNumber, time_t* arrivalTime) {
+    if (isStackEmpty(stack)) {
+        printf("停车场为空\n");
+        strcpy(plateNumber,"");
+        *arrivalTime = 0;
+        return;
+    }
+    strcpy(plateNumber, stack->array[stack->top]);
+    *arrivalTime = stack->arrivalTimes[stack->top];
+}
+
+// 定义队列节点
+typedef struct QueueNode {
+    char plateNumber[21];
+    time_t arrivalTime;
+    struct QueueNode* next;
+} QueueNode;
+
+// 定义队列
+typedef struct Queue {
+    QueueNode* front;
+    QueueNode* rear;
+} Queue;
+
+// 创建队列
+Queue* createQueue()
+{
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    queue->front = queue->rear = NULL;
+    return queue;
+}
+
+// 队列操作
+int isQueueEmpty(Queue* queue) {
+    return queue->front == NULL;
+}
+
+void enqueue(Queue* queue,char* plateNumber, time_t arrivalTime) {
+    QueueNode* newNode = (QueueNode*)malloc(sizeof(QueueNode));
+    strcpy(newNode->plateNumber, plateNumber);
+    newNode->arrivalTime = arrivalTime;
+    newNode->next = NULL;
+    if (isQueueEmpty(queue)) {
+        queue->front = queue->rear = newNode;
+    }
+    else {
+        queue->rear->next = newNode;
+        queue->rear = newNode;
+    }
+}
+
+void dequeue(Queue* queue, char* plateNumber, time_t* arrivalTime) {
+    if (isQueueEmpty(queue)) {
+        printf("队列为空\n");
+        strcpy(plateNumber, "");
+        *arrivalTime = 0;
+        return;
+    }
+    QueueNode* temp = queue->front;
+    strcpy(plateNumber, temp->plateNumber);
+    *arrivalTime = temp->arrivalTime;
+    queue->front = queue->front->next;
+    if (queue->front == NULL) {
+        queue->rear = NULL;
+    }
+    free(temp);
+}
+
+// 计算停车费用
+int calculateParkingFee(time_t arrivalTime, time_t departureTime) {
+    struct tm arrival = *localtime(&arrivalTime);
+    struct tm departure = *localtime(&departureTime);
+
+    int totalFee = 0;
+
+    while (arrival.tm_year < departure.tm_year || arrival.tm_yday < departure.tm_yday) {
+        struct tm endOfDay = arrival;
+        endOfDay.tm_hour = 23;
+        endOfDay.tm_min = 59;
+        endOfDay.tm_sec = 59;
+        time_t endOfDayTime = mktime(&endOfDay);
+
+        double diffInSeconds = difftime(endOfDayTime, arrivalTime);
+        int hours = (int)(diffInSeconds / 3600) + 1; // 不满一小时按一小时算
+
+        if (hours > FREE_HOURS) {
+            int dailyFee = (hours - FREE_HOURS) * HOURLY_RATE;
+            if (dailyFee > DAILY_MAX_FEE) {
+                dailyFee = DAILY_MAX_FEE;
+            }
+            totalFee += dailyFee;
+        }
+
+        arrival.tm_hour = 0;
+        arrival.tm_min = 0;
+        arrival.tm_sec = 0;
+        arrival.tm_mday++;
+        arrivalTime = mktime(&arrival);
+    }
+
+    // 计算最后一天的费用
+    double diffInSeconds = difftime(departureTime, arrivalTime);
+    int hours = (int)(diffInSeconds / 3600) + 1; // 不满一小时按一小时算
+
+    if (hours > FREE_HOURS) {
+        int dailyFee = (hours - FREE_HOURS) * HOURLY_RATE;
+        if (dailyFee > DAILY_MAX_FEE) {
+            dailyFee = DAILY_MAX_FEE;
+        }
+        totalFee += dailyFee;
+    }
+
+    return totalFee;
+}
+
+// 模拟停车场管理
+void manageParking() {
+    int parkingSlots;
+    printf("请输入停车场的车位数: ");
+    scanf("%d", &parkingSlots);
+
+    Stack* parkingStack = createStack(parkingSlots);
+    Queue* waitingQueue = createQueue();
+
+    char action;
+    char plateNumber[21];
+    struct tm timeInfo;
+    time_t currentTime;
+
+    printf("请输入操作（格式: A/D <车牌号> <时间(YYYY-MM-DD HH:MM)>，E 表示结束）:\n");
+    while (1) 
+    {
+        scanf(" %c", &action);
+        if (action == 'E') {
+            break;
+        }
+        scanf("%20s %d-%d-%d %d:%d", plateNumber, &timeInfo.tm_year, &timeInfo.tm_mon, &timeInfo.tm_mday, &timeInfo.tm_hour, &timeInfo.tm_min);
+        timeInfo.tm_year -= 1900;
+        timeInfo.tm_mon -= 1;
+        timeInfo.tm_sec = 0;
+        currentTime = mktime(&timeInfo);
+
+        if (action == 'A') {
+            if (!isStackFull(parkingStack)) {
+                push(parkingStack, plateNumber, currentTime);
+                printf("汽车 %s 停入停车场\n", plateNumber);
+            }
+            else {
+                enqueue(waitingQueue, plateNumber, currentTime);
+                printf("停车场已满，汽车 %s 停在便道上\n", plateNumber);
+            }
+        }
+        else if (action == 'D') {
+            if (isStackEmpty(parkingStack)) {
+                printf("停车场为空\n");
+                continue;
+            }
+
+            char topPlate[21];
+            time_t arrivalTime;
+            peek(parkingStack, topPlate, &arrivalTime);
+
+            if (strcmp(topPlate, plateNumber) == 0) {
+                pop(parkingStack, topPlate, &arrivalTime);
+                int fee = calculateParkingFee(arrivalTime, currentTime);
+                printf("汽车 %s 停留时间 %.2f 小时，应缴纳费用 %d 元\n", plateNumber, difftime(currentTime, arrivalTime) / 3600.0, fee);
+
+                while (!isQueueEmpty(waitingQueue) && !isStackFull(parkingStack)) {
+                    char waitingPlate[21];
+                    time_t waitingTime;
+                    dequeue(waitingQueue, waitingPlate, &waitingTime);
+                    push(parkingStack, waitingPlate, currentTime);
+                    printf("汽车 %s 从便道进入停车场\n", waitingPlate);
+                }
+            }
+            else {
+                printf("汽车 %s 不在停车场最外部，无法离开\n", plateNumber);
+            }
+        }
+        else {
+            printf("无效的操作\n");
+        }
+    }
+
+    free(parkingStack->array);
+    free(parkingStack->arrivalTimes);
+    free(parkingStack);
+    while (!isQueueEmpty(waitingQueue)) {
+        char temp[21];
+        time_t tempTime;
+        dequeue(waitingQueue, temp, &tempTime);
+    }
+    free(waitingQueue);
+}
+
+int main() {
+    manageParking();
+    return 0;
+}
+

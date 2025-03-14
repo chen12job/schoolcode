@@ -1,0 +1,108 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// 定义哈夫曼树的节点结构
+typedef struct HuffmanNode {
+    int weight;
+    struct HuffmanNode *left;
+    struct HuffmanNode *right;
+} HuffmanNode;
+
+// 创建一个新的哈夫曼树节点
+HuffmanNode* createNode(int weight) {
+    HuffmanNode* newNode = (HuffmanNode*)malloc(sizeof(HuffmanNode));
+    newNode->weight = weight;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// 优先队列的比较函数，用于排序
+int compare(const void* a, const void* b) {
+    return (*(HuffmanNode**)a)->weight - (*(HuffmanNode**)b)->weight;
+}
+
+// 创建哈夫曼树并计算带权路径长度
+int createHuffmanTree(int weights[], int n) {
+    HuffmanNode* nodes[10]; // 哈夫曼树节点数组，最多10个节点
+
+    // 将每个权值转换为单独的树节点
+    for (int i = 0; i < n; i++) {
+        nodes[i] = createNode(weights[i]);
+    }
+
+    // 循环直到只剩下一棵树
+    while (n > 1) {
+        // 排序节点数组，按权值升序
+        qsort(nodes, n, sizeof(HuffmanNode*), compare);
+
+        // 选择权值最小的两个节点
+        HuffmanNode* left = nodes[0];
+        HuffmanNode* right = nodes[1];
+
+        // 创建一个新节点，其权值为两个子节点权值之和
+        HuffmanNode* newNode = createNode(left->weight + right->weight);
+        newNode->left = left;
+        newNode->right = right;
+
+        // 替换节点数组，将新节点放入，并减少节点总数
+        nodes[0] = newNode;
+        nodes[1] = nodes[n - 1];
+        n--;
+    }
+
+    // 计算带权路径长度
+    int totalWeight = 0;
+    int currentDepth = 0;
+
+    // 递归计算带权路径长度
+    void calculateWeightedPathLength(HuffmanNode* root, int depth) {
+        if (root->left == NULL && root->right == NULL) {
+            totalWeight += root->weight * depth;
+            return;
+        }
+        if (root->left != NULL) {
+            calculateWeightedPathLength(root->left, depth + 1);
+        }
+        if (root->right != NULL) {
+            calculateWeightedPathLength(root->right, depth + 1);
+        }
+    }
+
+    calculateWeightedPathLength(nodes[0], currentDepth);
+
+    // 释放哈夫曼树节点的内存
+    void freeTree(HuffmanNode* root) 
+    {
+        if (root == NULL) return;
+        freeTree(root->left);
+        freeTree(root->right);
+        free(root);
+    }
+    freeTree(nodes[0]);
+
+    return totalWeight;
+}
+
+int main() {
+    int n;
+    
+    // 读取正整数的个数
+    scanf("%d", &n);
+
+    int weights[10];
+    
+    // 读取正整数
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &weights[i]);
+    }
+
+    // 创建哈夫曼树并计算带权路径长度
+    int result = createHuffmanTree(weights, n);
+
+    // 输出结果
+    printf("%d\n", result);
+
+    return 0;
+}
+

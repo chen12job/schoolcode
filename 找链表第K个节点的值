@@ -1,0 +1,76 @@
+ 
+#include <stdio.h>
+#include <stdlib.h>
+ 
+typedef struct ListNode {
+    int value;
+    struct ListNode *next;
+} ListNode;
+ 
+// 创建新节点
+ListNode* createNode(int value) {
+    ListNode* newNode = (ListNode*)malloc(sizeof(ListNode));
+    newNode->value = value;
+    newNode->next = NULL;
+    return newNode;
+}
+ 
+// 查找倒数第k个节点
+int findKthFromEnd(ListNode* head, int k) {
+    ListNode *first = head, *second = head;
+ 
+    // 移动first指针k步
+    for (int i = 0; i < k; i++) {
+        if (first == NULL) {
+            return -1; // 表示未找到
+        }
+        first = first->next;
+    }
+ 
+    // 同时移动first和second指针
+    while (first != NULL) {
+        first = first->next;
+        second = second->next;
+    }
+ 
+    return second->value; // 返回倒数第k个节点的值
+}
+ 
+int main() {
+    int k;
+    scanf("%d", &k);
+ 
+    ListNode* head = NULL;
+    ListNode* tail = NULL;
+    int value;
+ 
+    // 读取链表节点值
+    while (scanf("%d", &value) == 1) {
+        ListNode* newNode = createNode(value);
+        if (head == NULL) {
+            head = newNode;
+            tail = newNode;
+        } else {
+            tail->next = newNode;
+            tail = newNode;
+        }
+    }
+ 
+    // 查找倒数第k个节点
+    int result = findKthFromEnd(head, k);
+    if (result == -1) {
+        printf("Not Found\n");
+    } else {
+        printf("%d\n", result);
+    }
+ 
+    // 释放链表内存
+    ListNode* current = head;
+    while (current != NULL) {
+        ListNode* temp = current;
+        current = current->next;
+        free(temp);
+    }
+ 
+    return 0;
+}

@@ -1,0 +1,138 @@
+#include <iostream>
+ 
+#include <cstdlib>
+ 
+#include <ctime>
+ 
+using namespace std;
+ 
+struct card
+ 
+{
+ 
+    int value;
+ 
+    char huase; // '3', '4', '5', '6'
+ 
+};
+ 
+ 
+ 
+class cardgame
+ 
+{
+ 
+public:
+ 
+    void init();
+ 
+    void shuffle();
+ 
+    void display();
+ 
+ 
+ 
+private:
+ 
+    card a[54];
+ 
+};
+ 
+ 
+ 
+void cardgame::init()
+ 
+{
+ 
+    int index = 0;
+ 
+ 
+ 
+    // Initialize the deck of cards
+ 
+    for (int i = 3; i <= 6; ++i)
+ 
+    {
+ 
+        for (int j = 1; j <= 13; ++j)
+ 
+        {
+ 
+            a[index].value = j;
+ 
+            a[index].huase = static_cast<char>(i);
+ 
+            ++index;
+ 
+        }
+ 
+    }
+ 
+}
+ 
+ 
+ 
+void cardgame::shuffle()
+ 
+{
+ 
+    srand(static_cast<unsigned int>(time(0)));
+ 
+    for (int i = 0; i < 54; ++i)
+ 
+    {
+ 
+        int j = rand() % 54;
+ 
+        std::swap(a[i], a[j]);
+ 
+    }
+ 
+}
+ 
+ 
+ 
+void cardgame::display()
+ 
+{
+ 
+    for (int i = 0; i < 54; ++i)
+ 
+    {
+ 
+        std::cout << "Card " << i + 1 << ": " << a[i].value << " " << a[i].huase << std::endl;
+ 
+    }
+ 
+}
+ 
+ 
+ 
+int main()
+ 
+{
+ 
+    cardgame game;
+ 
+    game.init();
+ 
+ 
+ 
+    std::cout << "Initial deck of cards:" << std::endl;
+ 
+    game.display();
+ 
+ 
+ 
+    game.shuffle();
+ 
+    std::cout << "\nShuffled deck of cards:" << std::endl;
+ 
+    game.display();
+ 
+ 
+ 
+    return 0;
+ 
+}
+ 

@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+struct node
+{
+int num;
+struct node* next;
+};
+//创建函数
+struct node* createList();
+//打印函数
+void printList(struct node* head);
+int main(){
+struct node* head=NULL;
+head = createList();
+ // 这里调用deleteDuplicates函数
+printList(head);
+return 1;
+}
+struct node* createList(){
+//头指针
+struct node* head=NULL;
+struct node* p1,*p2;
+int num;
+scanf("%d",&num);
+while(num!=0)
+{
+//创建一个新的结点
+p1 = (struct node* ) malloc(sizeof(struct node));
+//把信息拷贝到新的结点
+ p1->num = num;
+ if(head==NULL){
+head = p1;
+head->next=NULL;
+ }
+ else{
+p2=head;
+while(p2->next!=NULL)
+{
+p2=p2->next;
+}
+p2->next = p1;
+p1->next = NULL;
+ }
+ scanf("%d",&num);
+return head;
+}
+void printList(struct node* head){
+struct node* p;
+if(head==NULL)
+{
+printf("Empty List\n");
+return;
+}
+else{
+p=head;
+while(p!=NULL)
+{
+printf("% d",p->num);
+p=p->next;
+}
+}
+}

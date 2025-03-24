@@ -1,0 +1,42 @@
+#include<stdio.h>
+#include<string.h>
+#define LEN 7
+struct stu
+{
+int num;
+char name[LEN];
+int age;
+};
+int main()
+{
+struct stu list[50],*p,*p0,tmp;
+int n,i;
+scanf("%d",&n);
+for(i=0;i<n;i++) //???????
+{
+scanf("%d %s %d",&list[i].num,&list[i].name,&list[i].age);
+list[i].name[LEN-1]='\0';
+}
+for(p=&list[0];p<&list[n];p++) //??????????
+for(p0=p;p0<&list[n];p0++)
+if(strcmp(p->name,p0->name)>0)
+{
+tmp=*p;
+*p=*p0;
+*p0=tmp;
+}
+for(i=0;i<n;i++)
+printf("%3d%6s%3d\n",list[i].num,list[i].name,list[i].age);
+printf("\n");
+for(p=&list[0];p<&list[n];p++) //??????????????????
+for(p0=p;p0<&list[n];p0++)
+if(p->age>p0->age)
+{
+tmp=*p;
+*p=*p0;
+*p0=tmp;
+}
+for(i=0;i<n;i++)
+printf("%3d%6s%3d\n",list[i].num,list[i].name,list[i].age);
+return 0;
+}

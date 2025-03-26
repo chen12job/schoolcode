@@ -1,0 +1,59 @@
+#include<stdio.h>
+struct queue{
+	int time[3000];
+};
+struct queue q;
+int head=1,tail=1;
+int n,m,op,i;
+int min(int x,int y)
+{
+	return x>y?y:x;
+}
+void chooseOP1(int n)
+{
+	if(n<21)	op=3;    //开放窗口个数
+	else if(n>=21 && n<28)		op=4;
+	else op=5;
+}
+void chooseOP2(int n)
+{
+	if(n<28)	op=3;    //开放窗口个数
+	else if(n>=28 && n<35)		op=4;
+	else op=5;
+}
+int main()
+{
+	scanf("%d",&n);
+	while(n--)
+	{
+		scanf("%d",&m);
+		tail+=m;    //队尾增加
+		chooseOP1(tail-head);
+		for(i=head;i<min(head+op,tail);i++)
+		{
+			printf("%d : %d\n",i,q.time[i]);   //输出已经在窗口的客户
+		}
+		for(i=head+op;i<tail;i++)
+		{
+			q.time[i]++;              //等待的客户周期加1
+		}
+		head=min(head+op,tail);       //出队
+		chooseOP1(tail-head);
+	}
+	while(head<tail)
+	{
+		chooseOP2(tail-head);
+		for(i=head;i<min(head+op,tail);i++)
+		{
+			printf("%d : %d\n",i,q.time[i]);   //输出已经在窗口的客户
+		}
+		for(i=head+op;i<tail;i++)
+		{
+			q.time[i]++;              //等待的客户周期加1
+		}
+		head=min(head+op,tail);       //出队
+		chooseOP2(tail-head);
+	}
+	return 0;
+}
+ 

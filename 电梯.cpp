@@ -34,7 +34,7 @@ int main()
             q.push(down);
         }
     }
-    if (dist[B] != INT_MAX)
+    if (dist[B] != INT_MAX)//最大值
     {
         cout << dist[B] << endl;
     }

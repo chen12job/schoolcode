@@ -1,1 +1,1 @@
-schoolcode and other obj.
+ other obj.

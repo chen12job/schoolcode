@@ -1,0 +1,27 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include<string.h>
+int main()
+{
+    char arr[100],a[100];
+    gets(arr);
+    char str[]={"abc"};
+    int n=strlen(arr);
+    int m=strlen(str);
+    int i;
+    strcpy(a,arr);  //方便之后恢复；
+    for(i=2;i<m+2;i++)
+    {
+ 
+        arr[i]=str[i-2];
+    }
+    for(i=5;i<n+m;i++)  //恢复后面的字符
+    {
+ 
+        arr[i]=a[i-m];
+    }
+    arr[i]='\0';
+ 
+    puts(arr);
+    return 0;
+}

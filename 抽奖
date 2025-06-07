@@ -1,0 +1,49 @@
+#include <iostream>  
+#include <vector>  
+#include <algorithm>  
+  
+using namespace std;  
+  
+typedef long long ll;  
+  
+vector<int> inputVecI(int n) {  
+    vector<int> a(n);  
+    for (int i = 0; i < n; ++i) {  
+        cin >> a[i];  
+    }  
+    return a;  
+}  
+  
+ll get_score(vector<int> &v) {  
+    if ((v[0] == v[1] and v[1] == v[2]) or (v[0] + 1 == v[1] and v[1] + 1 == v[2])) return 200;  
+//    ranges::sort(v);  
+    std::sort(v.begin(), v.end());  
+    if ((v[0] == v[1] or v[1] == v[2]) or (v[0] + 1 == v[1] and v[1] + 1 == v[2])) return 100;  
+    return 0;  
+}  
+  
+void solve() {  
+    int n, m;  
+    ll ans = 0;  
+    cin >> n;  
+    vector<int> a(n),b(n),c(n);  
+    int ia = 0, ib = 0, ic = 0;  
+    for (int i = 0; i < n; ++i) cin >> a[i];  
+    for (int i = 0; i < n; ++i) cin >> b[i];  
+    for (int i = 0; i < n; ++i) cin >> c[i];  
+    cin >> m;  
+    for (int i = 0; i < m; ++i) {  
+        vector<int> v = inputVecI(3);  
+        ia = (ia + v[0]) % n;  
+        ib = (ib + v[1]) % n;  
+        ic = (ic + v[2]) % n;  
+        v[0] = a[ia], v[1] = b[ib], v[2] = c[ic];  
+        ans += get_score(v);  
+    }  
+    cout << ans << endl;  
+}  
+  
+int main() {  
+    solve();  
+    return 0;  
+}
